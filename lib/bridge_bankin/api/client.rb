@@ -86,7 +86,8 @@ module BridgeBankin
       end
 
       def make_http_request
-        Net::HTTP.start(uri.host, uri.port, use_ssl: true) do |http|
+        http.use_ssl = true
+        http.start do |http|
           api_response = http.request(yield)
 
           case api_response.code
@@ -104,9 +105,31 @@ module BridgeBankin
         JSON.parse(json_response_body, symbolize_names: true)
       end
 
+      def http
+        @http ||= Net::HTTP.new(uri.host, uri.port,
+                                proxy_host, proxy_port, proxy_username, proxy_password)
+      end
+
       def uri
         @uri ||= URI.parse(BridgeBankin.configuration.api_base_url)
       end
+
+      def proxy_host
+        @proxy_host ||= BridgeBankin.configuration.proxy_host
+      end
+
+      def proxy_port
+        @proxy_port ||= BridgeBankin.configuration.proxy_port
+      end
+
+      def proxy_username
+        @proxy_username ||= BridgeBankin.configuration.proxy_username
+      end
+
+      def proxy_password
+        @proxy_password ||= BridgeBankin.configuration.proxy_password
+      end
+
 
       def headers
         headers =
